@@ -2,6 +2,12 @@ import cv2
 import time
 import dlib
 from scipy.spatial import distance
+from playsound import playsound
+from pygame import mixer
+
+mixer.init()
+mixer.music.load("beep_warning.mp3") 
+mixer.music.set_volume(0.7)
 
 def calculate_EAR(eye):
     A = distance.euclidean(eye[1], eye[5])
@@ -84,12 +90,16 @@ while cap.isOpened():
 
         if drowsy:
             cv2.putText(img,"DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+            if not mixer.music.get_busy():
+                mixer.music.play()
+                 
             if show_question:
                 cv2.putText(img,"2 + 3 = ?", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
         else:
             cv2.putText(img,"ACTIVE", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(img,f"EAR: {EAR}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
+            
+            
     cv2.imshow('Driver Monitoring', img)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
