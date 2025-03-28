@@ -20,6 +20,7 @@ eye_closed_time = 0
 last_eye_open_time = time.time()
 threshold = 2
 drowsy = False
+show_question = False
 
 while cap.isOpened():
     ret, img = cap.read()
@@ -58,19 +59,11 @@ while cap.isOpened():
             x = face_landmarks.part(n).x
             y = face_landmarks.part(n).y
             leftEye.append((x,y))
-            next_point = n+1 if n != 41 else 36
-            x2 = face_landmarks.part(next_point).x
-            y2 = face_landmarks.part(next_point).y
-            cv2.line(img,(x,y),(x2,y2),(0,255,0),1)
 
         for n in range(42, 48):
             x = face_landmarks.part(n).x
             y = face_landmarks.part(n).y
             rightEye.append((x,y))
-            next_point = n+1 if n != 47 else 42
-            x2 = face_landmarks.part(next_point).x
-            y2 = face_landmarks.part(next_point).y
-            cv2.line(img,(x,y),(x2,y2),(0,255,0),1)
 
         left_ear = calculate_EAR(leftEye)
         right_ear = calculate_EAR(rightEye)
@@ -83,19 +76,26 @@ while cap.isOpened():
             last_eye_open_time = time.time()
             eye_closed_time = 0
             drowsy = False
+            show_question = False  # Reset question if eyes open
 
         if eye_closed_time > threshold:
             drowsy = True
+            show_question = True
 
         if drowsy:
             cv2.putText(img,"DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+            if show_question:
+                cv2.putText(img,"2 + 3 = ?", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
         else:
             cv2.putText(img,"ACTIVE", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(img,f"EAR: {EAR}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
     cv2.imshow('Driver Monitoring', img)
-    if cv2.waitKey(1) == ord('q'):
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):
         break
+    elif key == ord('5'):
+        show_question = False  # Remove question when '5' is pressed
 
 cap.release()
 cv2.destroyAllWindows()
