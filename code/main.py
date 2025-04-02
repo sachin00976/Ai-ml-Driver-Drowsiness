@@ -15,6 +15,13 @@ def calculate_EAR(eye):
     C = distance.euclidean(eye[0], eye[3])
     return (A + B) / (2.0 * C)
 
+def enhance_eye_detection(gray, eye_region):
+    """ Enhance eye region visibility for better landmark detection, especially with glasses. """
+    if eye_region[1] < 0 or eye_region[3] > gray.shape[0] or eye_region[0] < 0 or eye_region[2] > gray.shape[1]:
+        return gray
+    enhanced = cv2.equalizeHist(gray[eye_region[1]:eye_region[3], eye_region[0]:eye_region[2]])
+    return enhanced
+
 hog_face_detector = dlib.get_frontal_face_detector()
 dlib_facelandmark = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 cap = cv2.VideoCapture(0)
@@ -60,16 +67,22 @@ while cap.isOpened():
         face_landmarks = dlib_facelandmark(gray, driver_face)
         leftEye = []
         rightEye = []
-
+        
+        left_eye_region = (face_landmarks.part(36).x, face_landmarks.part(37).y, 
+                           face_landmarks.part(39).x, face_landmarks.part(41).y)
+        right_eye_region = (face_landmarks.part(42).x, face_landmarks.part(43).y, 
+                            face_landmarks.part(45).x, face_landmarks.part(47).y)
+        
+        enhanced_left_eye = enhance_eye_detection(gray, left_eye_region)
+        enhanced_right_eye = enhance_eye_detection(gray, right_eye_region)
+        
         for n in range(36, 42):
-            x = face_landmarks.part(n).x
-            y = face_landmarks.part(n).y
-            leftEye.append((x,y))
-
+            x, y = face_landmarks.part(n).x, face_landmarks.part(n).y
+            leftEye.append((x, y))
+        
         for n in range(42, 48):
-            x = face_landmarks.part(n).x
-            y = face_landmarks.part(n).y
-            rightEye.append((x,y))
+            x, y = face_landmarks.part(n).x, face_landmarks.part(n).y
+            rightEye.append((x, y))
 
         left_ear = calculate_EAR(leftEye)
         right_ear = calculate_EAR(rightEye)
@@ -92,14 +105,13 @@ while cap.isOpened():
             cv2.putText(img,"DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
             if not mixer.music.get_busy():
                 mixer.music.play()
-                 
+                
             if show_question:
                 cv2.putText(img,"2 + 3 = ?", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
         else:
             cv2.putText(img,"ACTIVE", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             cv2.putText(img,f"EAR: {EAR}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-            
-            
+
     cv2.imshow('Driver Monitoring', img)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
@@ -109,4 +121,3 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
-#added extra for accuracy for wearing glasses detection
