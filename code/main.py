@@ -31,7 +31,7 @@ tracking = False
 driver_face = None
 eye_closed_time = 0
 last_eye_open_time = time.time()
-threshold = 2
+threshold = .3
 drowsy = False
 show_question = False
 
