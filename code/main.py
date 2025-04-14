@@ -16,7 +16,6 @@ def calculate_EAR(eye):
     C = distance.euclidean(eye[0], eye[3])
     return (A + B) / (2.0 * C)
 
-
 def enhance_eye_detection(gray, eye_region):
     if eye_region[1] < 0 or eye_region[3] > gray.shape[0] or eye_region[0] < 0 or eye_region[2] > gray.shape[1]:
         return gray
@@ -26,7 +25,6 @@ def enhance_eye_detection(gray, eye_region):
     enhanced_eye = gray.copy()
     enhanced_eye[eye_region[1]:eye_region[3], eye_region[0]:eye_region[2]] = enhanced
     return enhanced_eye
-
 
 hog_face_detector = dlib.get_frontal_face_detector()
 dlib_facelandmark = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -152,6 +150,8 @@ while cap.isOpened():
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
+    elif key == ord('5'):
+        show_question = False
 
 cap.release()
 cv2.destroyAllWindows()
