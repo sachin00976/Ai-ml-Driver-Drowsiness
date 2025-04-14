@@ -16,11 +16,14 @@ def calculate_EAR(eye):
     return (A + B) / (2.0 * C)
 
 def enhance_eye_detection(gray, eye_region):
-    """ Enhance eye region visibility for better landmark detection, especially with glasses. """
     if eye_region[1] < 0 or eye_region[3] > gray.shape[0] or eye_region[0] < 0 or eye_region[2] > gray.shape[1]:
         return gray
-    enhanced = cv2.equalizeHist(gray[eye_region[1]:eye_region[3], eye_region[0]:eye_region[2]])
-    return enhanced
+    eye_roi = gray[eye_region[1]:eye_region[3], eye_region[0]:eye_region[2]]
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(eye_roi)
+    enhanced_eye = gray.copy()
+    enhanced_eye[eye_region[1]:eye_region[3], eye_region[0]:eye_region[2]] = enhanced
+    return enhanced_eye
 
 hog_face_detector = dlib.get_frontal_face_detector()
 dlib_facelandmark = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -67,19 +70,19 @@ while cap.isOpened():
         face_landmarks = dlib_facelandmark(gray, driver_face)
         leftEye = []
         rightEye = []
-        
+
         left_eye_region = (face_landmarks.part(36).x, face_landmarks.part(37).y, 
                            face_landmarks.part(39).x, face_landmarks.part(41).y)
         right_eye_region = (face_landmarks.part(42).x, face_landmarks.part(43).y, 
                             face_landmarks.part(45).x, face_landmarks.part(47).y)
-        
-        enhanced_left_eye = enhance_eye_detection(gray, left_eye_region)
-        enhanced_right_eye = enhance_eye_detection(gray, right_eye_region)
-        
+
+        gray = enhance_eye_detection(gray, left_eye_region)
+        gray = enhance_eye_detection(gray, right_eye_region)
+
         for n in range(36, 42):
             x, y = face_landmarks.part(n).x, face_landmarks.part(n).y
             leftEye.append((x, y))
-        
+
         for n in range(42, 48):
             x, y = face_landmarks.part(n).x, face_landmarks.part(n).y
             rightEye.append((x, y))
@@ -95,7 +98,7 @@ while cap.isOpened():
             last_eye_open_time = time.time()
             eye_closed_time = 0
             drowsy = False
-            show_question = False  # Reset question if eyes open
+            show_question = False
 
         if eye_closed_time > threshold:
             drowsy = True
@@ -105,7 +108,6 @@ while cap.isOpened():
             cv2.putText(img,"DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
             if not mixer.music.get_busy():
                 mixer.music.play()
-                
             if show_question:
                 cv2.putText(img,"2 + 3 = ?", (200, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 3)
         else:
@@ -117,7 +119,7 @@ while cap.isOpened():
     if key == ord('q'):
         break
     elif key == ord('5'):
-        show_question = False  # Remove question when '5' is pressed
+        show_question = False
 
 cap.release()
 cv2.destroyAllWindows()
