@@ -104,9 +104,7 @@ while cap.isOpened():
         else:
             driver_face = None
             tracking = False
-        else:
-            driver_face = None
-            tracking = False
+        
     else:
         tracking_quality = tracker.update(img)
         if tracking_quality >= 8:
