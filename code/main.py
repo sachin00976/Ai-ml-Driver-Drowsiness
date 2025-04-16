@@ -7,7 +7,9 @@ import random
 
 mixer.init()
 mixer.music.load("beep_warning.mp3")
+mixer.music.load("beep_warning.mp3")
 mixer.music.set_volume(0.7)
+
 
 def calculate_EAR(eye):
     A = distance.euclidean(eye[1], eye[5])
@@ -102,6 +104,9 @@ while cap.isOpened():
         else:
             driver_face = None
             tracking = False
+        else:
+            driver_face = None
+            tracking = False
     else:
         tracking_quality = tracker.update(img)
         if tracking_quality >= 8:
@@ -165,6 +170,7 @@ while cap.isOpened():
             show_question = True
 
         if drowsy:
+            cv2.putText(img, "DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
             cv2.putText(img, "DROWSINESS DETECTED!", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
             if not mixer.music.get_busy():
                 mixer.music.play()
