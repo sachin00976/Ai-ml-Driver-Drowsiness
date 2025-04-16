@@ -13,7 +13,8 @@ This project is a **real-time driver drowsiness detection system** using compute
 
 ## 📹 Demo
 
-*Add a GIF or video link here showing the project in action.*
+![Screenshot (2)](https://github.com/user-attachments/assets/f0aeab1e-1d13-4af2-969d-3ca67b4d9dd7)![Screenshot (1)](https://github.com/user-attachments/assets/b086acc9-d881-4568-bcc2-7395319cbfb5)
+
 
 ## 🛠️ Requirements
 
